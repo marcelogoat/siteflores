@@ -13,7 +13,7 @@ bun run dev
 
 Abra o endereço exibido pelo Vite, normalmente `http://localhost:5173`.
 
-Crie `.env.local` a partir de `.env.example` e configure `BLACKCAT_SECRET_KEY`. A chave é usada somente pelos endpoints do servidor e nunca é incluída no bundle do navegador. Na Cloudflare Pages, cadastre o mesmo nome em **Settings → Variables and Secrets** como secret.
+Crie `.env.local` a partir de `.env.example` e configure `BLACKCAT_SECRET_KEY`. A chave é usada somente pelos endpoints do servidor e nunca é incluída no bundle do navegador. Na Vercel, cadastre o mesmo nome em **Project Settings → Environment Variables**; as funções da pasta `api/` atendem localização e PIX. Na Cloudflare Pages, use **Settings → Variables and Secrets** com as funções da pasta `functions/`.
 
 ## Verificar
 
