@@ -1,0 +1,158 @@
+[hidden]{ display:none !important; }
+
+    .crumbs{
+      display:flex; flex-wrap:wrap; align-items:center; gap:7px;
+      padding:16px 0 4px;
+      font-size:13px; color:var(--muted);
+    }
+    .crumbs a{ font-weight:600; transition:color .18s ease; }
+    .crumbs a:hover{ color:var(--accent); }
+    .crumbs__sep{ opacity:.5; }
+    .crumbs__here{
+      color:var(--ink); font-weight:700;
+      max-width:46vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+
+    
+    .pdp{ display:grid; grid-template-columns:minmax(0,1fr); gap:22px; padding:12px 0 8px; }
+    @media (min-width:860px){
+      .pdp{
+        grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
+        gap:44px; align-items:start; padding-top:26px;
+      }
+      .pdp__media{ position:sticky; top:84px; }
+    }
+
+    .pdp__media{
+      position:relative; margin:0;
+      aspect-ratio:4/5; overflow:hidden;
+      border-radius:var(--r-lg);
+      background:
+        radial-gradient(120% 90% at 80% 0%, var(--accent-soft) 0%, transparent 55%),
+        var(--paper);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      animation:pdp-rise .5s ease both;
+    }
+    .pdp__media img{ width:100%; height:100%; object-fit:cover; }
+    .pdp__media .pitem__tag{ top:14px; left:14px; }
+
+    
+    .pdp__info{ display:flex; flex-direction:column; gap:16px; animation:pdp-fade .5s ease .08s both; }
+    @keyframes pdp-rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+    @keyframes pdp-fade{ from{ opacity:0; } to{ opacity:1; } }
+
+    .pdp__head{ display:flex; flex-direction:column; gap:6px; }
+    .pdp__category{
+      font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--accent);
+    }
+    .pdp__name{ font-size:clamp(26px, 5.6vw, 36px); }
+
+    
+    .pdp__rating{
+      display:inline-flex; align-items:center; gap:8px;
+      margin-top:2px; font-size:13px; width:fit-content;
+    }
+    .pdp__rating strong{ font-size:14px; font-weight:800; }
+    .pdp__rating .muted{ color:var(--muted-warm); font-size:12.5px; }
+    .pdp__rating:hover strong{ text-decoration:underline; }
+
+    .pdp__prices{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .price--lg{ font-size:27px; font-weight:800; letter-spacing:-.01em; color:var(--accent); }
+    .pdp__discount{
+      padding:3px 10px; border-radius:999px;
+      background:var(--accent-soft); color:var(--accent);
+      font-size:12px; font-weight:800; letter-spacing:.03em;
+    }
+    .pdp__pix{ font-size:13.5px; color:var(--muted); }
+    .pdp__pix strong{ color:var(--ink); }
+
+    .pdp__label{
+      font-family:var(--font); font-size:13px; font-weight:800;
+      letter-spacing:0; margin:0 0 9px;
+    }
+    .size{ display:block; width:100%; }
+
+    .pdp__subtitle{ font-size:21px; font-weight:400; margin:0 0 11px; }
+
+    .pdp__feedback{
+      display:flex; align-items:center; gap:8px;
+      padding:12px 14px;
+      background:var(--accent-soft); border-radius:var(--r-sm);
+      font-size:14px; font-weight:600;
+    }
+    .pdp__feedback svg{ width:18px; height:18px; flex:none; color:var(--accent); }
+    .pdp__feedback a{ color:var(--accent); font-weight:800; text-decoration:underline; }
+
+    .pdp__soldout{
+      padding:14px 16px;
+      background:var(--card); border:1px dashed var(--line); border-radius:var(--r-sm);
+      font-size:14px; color:var(--muted);
+    }
+    .pdp__soldout strong{ color:var(--ink); }
+
+    .pdp__trust{
+      display:grid; gap:11px;
+      padding:16px;
+      background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+      font-size:13.5px; line-height:1.5; color:var(--ink-soft);
+    }
+    .pdp__trust strong{ color:var(--ink); }
+    .pdp__trust li{ display:flex; gap:10px; align-items:flex-start; }
+    .pdp__trust svg{ width:18px; height:18px; flex:none; margin-top:2px; color:var(--accent); }
+
+    .pdp__desc{ padding-top:18px; border-top:1px solid var(--line); }
+    .pdp__desc h2{ font-size:15px; margin-bottom:8px; }
+    .pdp__desc p{ font-size:14px; line-height:1.6; color:var(--muted); }
+    .pdp__desc p + p{ margin-top:8px; }
+    .pdp__desc strong{ color:var(--ink); }
+
+    
+    .pdp__reviews{ padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:96px; }
+    .reviews__more{ width:100%; border-radius:999px; margin-top:12px; font-size:13.5px; }
+
+    
+    .buybar{
+      position:fixed; left:0; right:0; z-index:49;
+      bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+      display:flex; align-items:center; gap:14px;
+      padding:11px 18px;
+      background:rgba(255,255,255,.94);
+      -webkit-backdrop-filter:saturate(160%) blur(10px);
+      backdrop-filter:saturate(160%) blur(10px);
+      border-top:1px solid var(--line);
+    }
+    .buybar__total small{
+      display:block; font-size:10.5px; font-weight:700; color:var(--muted-warm);
+    }
+    .buybar__total strong{
+      display:block; font-size:18px; font-weight:800; letter-spacing:-.01em; color:var(--accent);
+    }
+    .buybar__btn{ flex:1; min-height:52px; border-radius:999px; font-size:15px; }
+    @media (max-width:859.98px){
+      body.has-buybar{ padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 104px); }
+      body.has-buybar .cookiebar{ bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 90px); }
+    }
+    @media (min-width:860px){
+      .buybar{
+        position:static; padding:16px 0 0; background:transparent;
+        border-top:1px solid var(--line);
+        -webkit-backdrop-filter:none; backdrop-filter:none;
+      }
+    }
+
+    
+    .related{ margin-top:48px; }
+    .related__head{
+      display:flex; align-items:baseline; gap:12px;
+      margin-bottom:16px;
+    }
+    .related__head h2{ font-size:23px; font-weight:400; }
+    .related__head::after{
+      content:""; flex:1; height:1px; background:var(--line);
+      transform:translateY(-4px);
+    }
+    .related .price{ color:var(--accent); }
+
+    .pitem__link{ display:flex; flex-direction:column; flex:1; }

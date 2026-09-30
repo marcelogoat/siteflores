@@ -1,0 +1,116 @@
+.confirm{
+      max-width:600px; margin-inline:auto;
+      padding-top:10px;
+      display:grid; gap:16px;
+    }
+    .confirm > *{ animation:confirm-rise .55s ease both; }
+    .confirm > *:nth-child(2){ animation-delay:.08s; }
+    .confirm > *:nth-child(3){ animation-delay:.16s; }
+    .confirm > *:nth-child(4){ animation-delay:.24s; }
+    @keyframes confirm-rise{
+      from{ opacity:0; transform:translateY(10px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    
+    .confirm-hero{
+      position:relative;
+      text-align:center; padding:34px 22px 8px;
+    }
+    .confirm-hero::before{
+      content:""; position:absolute; left:50%; top:-110px;
+      width:min(420px, 100vw); height:260px; transform:translateX(-50%);
+      pointer-events:none;
+      background:radial-gradient(closest-side, var(--success-soft) 0%, rgba(220,252,231,0) 78%);
+    }
+    .confirm-hero > *{ position:relative; }
+
+    .confirm-seal{
+      width:74px; height:74px; margin:0 auto;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:999px;
+      background:var(--success); color:#fff;
+      box-shadow:0 14px 30px -12px rgba(22,163,74,.6);
+      animation:seal-pop .5s cubic-bezier(.2,.9,.3,1.35) both;
+    }
+    .confirm-seal svg{ width:38px; height:38px; }
+    .confirm-seal svg path{
+      stroke-dasharray:60; stroke-dashoffset:60;
+      animation:seal-draw .55s .3s ease forwards;
+    }
+    @keyframes seal-pop{ from{ transform:scale(.55); opacity:0; } to{ transform:scale(1); opacity:1; } }
+    @keyframes seal-draw{ to{ stroke-dashoffset:0; } }
+
+    
+    .confirm--pending .confirm-seal{
+      background:rgba(12,12,12,.07); color:var(--muted);
+      box-shadow:none;
+    }
+    .confirm--pending .confirm-seal [data-seal-check]{ display:none; }
+    .confirm-seal [data-seal-clock]{ display:none; }
+    .confirm--pending .confirm-seal [data-seal-clock]{ display:block; }
+
+    .confirm-pill{
+      display:inline-flex; align-items:center; gap:6px;
+      margin-top:14px; padding:5px 12px; border-radius:999px;
+      background:rgba(12,12,12,.06); color:var(--muted);
+      font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    }
+    
+    .confirm-pill[hidden]{ display:none; }
+    
+    .confirm-restante [hidden]{ display:none; }
+
+    .confirm-title{
+      font-size:clamp(26px, 6vw, 31px);
+      margin:18px 0 9px;
+    }
+    .confirm-title em{ font-style:normal; color:var(--accent); white-space:nowrap; }
+    .confirm-headline{
+      font-size:13.5px; line-height:1.55; color:var(--muted);
+      max-width:34ch; margin-inline:auto;
+    }
+
+    
+    .confirm-details{
+      border-radius:20px; padding:18px;
+      border:1px solid rgba(12,12,12,.08);
+      box-shadow:0 14px 34px -24px rgba(12,12,12,.26);
+    }
+    .confirm-details h2{ font-size:15px; font-weight:800; margin:0 0 6px; }
+    .confirm-details dl{ margin:0; }
+    .confirm-details dl > div{
+      display:flex; align-items:baseline; justify-content:space-between; gap:14px;
+      padding:11px 0; border-top:1px solid rgba(12,12,12,.08);
+    }
+    .confirm-details dl > div:first-of-type{ border-top:0; }
+    .confirm-details dt{ font-size:13px; font-weight:600; color:var(--muted); }
+    .confirm-details dd{ margin:0; font-size:13.5px; font-weight:700; text-align:right; }
+    .confirm-details .confirm-details__total{ padding-bottom:2px; }
+    .confirm-details .confirm-details__total dt{ font-size:14px; font-weight:800; color:var(--ink); }
+    .confirm-details .confirm-details__total dd{ color:var(--accent); font-size:18px; font-weight:800; letter-spacing:-.01em; }
+
+    .confirm-pending{ font-size:13.5px; line-height:1.6; }
+    .confirm-pending a{ color:var(--accent); font-weight:800; text-decoration:underline; }
+
+    
+    .confirm-actions{ display:grid; gap:10px; }
+    .confirm-actions .muted{
+      font-size:12.5px; line-height:1.55; color:var(--muted-warm);
+      text-align:center; max-width:40ch; margin:2px auto 6px;
+    }
+    .confirm-actions .btn{ border-radius:999px; min-height:50px; }
+    .confirm-actions .btn--action{ min-height:54px; font-size:15px; }
+    .confirm-help{
+      font-size:12.5px; text-align:center; color:var(--muted); line-height:1.7;
+      margin-top:4px;
+    }
+    .confirm-help a{ color:var(--accent); font-weight:700; }
+    .confirm-help a:hover{ text-decoration:underline; }
+
+    
+    .confirm-loading:not([hidden]){ display:grid; gap:16px; }
+    .confirm-loading .skeleton{ border-radius:var(--r); }
+
+    
+    [data-view="ok"]:not([hidden]){ display:grid; gap:16px; }

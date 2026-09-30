@@ -1,0 +1,68 @@
+.sac{ max-width:680px; padding-top:30px; padding-bottom:48px; }
+
+    .sac__kicker{
+      display:inline-block; padding:6px 13px; border-radius:999px;
+      background:var(--accent-soft); color:var(--accent);
+      font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+    }
+    .sac__title{
+      margin:14px 0 8px;
+      font-size:clamp(28px,5.5vw,38px);
+    }
+    .sac__lead{
+      margin:0; max-width:56ch;
+      font-size:14.5px; line-height:1.55; color:var(--muted);
+    }
+
+    
+    .sac-card{
+      margin-top:18px; padding:24px 22px;
+      border-radius:var(--r-lg);
+      text-align:center;
+    }
+    .sac-card > svg{
+      width:34px; height:34px; margin:0 auto;
+      color:var(--accent); display:block;
+    }
+    .sac-card__email{
+      display:block; margin-top:10px;
+      font-size:clamp(15px,4.4vw,19px); font-weight:800;
+      letter-spacing:-.01em; color:var(--ink); word-break:break-all;
+      transition:color .18s ease;
+    }
+    .sac-card__email:hover{ color:var(--accent); }
+    .sac-card__btn{
+      width:100%; min-height:50px; margin-top:14px;
+      border-radius:999px;
+      font-size:14.5px;
+    }
+    .sac-card__sla{ margin:10px 0 0; font-size:12.5px; color:var(--muted-warm); }
+
+    
+    .sac-topics{
+      margin-top:14px;
+      display:grid; grid-template-columns:1fr 1fr; gap:11px;
+    }
+    .sac-topic{
+      display:block; padding:15px 14px;
+      border-radius:16px;
+      transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+    }
+    .sac-topic:hover{
+      box-shadow:var(--shadow); transform:translateY(-2px);
+      border-color:rgba(159,18,57,.28);
+    }
+    .sac-topic svg{ width:20px; height:20px; color:var(--accent); display:block; }
+    .sac-topic h2{
+      margin:8px 0 0;
+      font-size:13.5px; font-weight:800; letter-spacing:-.01em; color:var(--ink);
+    }
+    .sac-topic p{
+      margin:3px 0 0;
+      font-size:12px; line-height:1.45; color:var(--muted);
+    }
+    @media (min-width:560px){
+      .sac-topic{ padding:18px 16px; }
+      .sac-topic h2{ font-size:15px; }
+      .sac-topic p{ font-size:13px; }
+    }

@@ -1,0 +1,105 @@
+.colhead{
+      position:relative; overflow:hidden;
+      padding:30px 0 22px;
+      background:
+        radial-gradient(560px 280px at 90% -70px, var(--accent-soft) 0%, transparent 70%),
+        var(--bg);
+      border-bottom:1px solid var(--line);
+    }
+    .colhead__crumbs{
+      display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+      font-size:12.5px; font-weight:700; color:var(--muted-warm);
+    }
+    .colhead__crumbs a{ color:var(--muted-warm); }
+    .colhead__crumbs a:hover{ color:var(--accent); }
+    .colhead__crumbs svg{ width:13px; height:13px; color:var(--stone); flex:none; }
+    .colhead__crumbs [aria-current]{ color:var(--accent); }
+    .colhead__row{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:14px; margin-top:12px;
+    }
+    .colhead h1{
+      font-size:clamp(28px, 6vw, 44px);
+    }
+    .colhead__count{
+      flex:none; font-size:13px; font-weight:700; color:var(--muted-warm);
+      padding-bottom:6px; white-space:nowrap;
+    }
+    .colhead__sub{
+      margin-top:8px; max-width:54ch;
+      color:var(--ink-soft); font-size:14.5px;
+    }
+    .colhead__bloom{
+      position:absolute; right:-40px; top:-50px;
+      width:200px; height:200px; color:var(--accent);
+      opacity:.07; pointer-events:none;
+    }
+    @media (min-width:768px){
+      .colhead{ padding:44px 0 30px; }
+      .colhead__bloom{ width:280px; height:280px; right:0; }
+    }
+
+    
+    .coltools{ padding-top:18px; }
+    .coltools__row{
+      display:flex; align-items:center; gap:10px;
+    }
+    .coltools .chips{ margin-top:0; flex:1; min-width:0; }
+    .coltools select{
+      flex:none; width:auto; min-height:38px;
+      padding:6px 34px 6px 14px;
+      border:1px solid var(--line); border-radius:999px;
+      background-color:var(--card);
+      font-weight:700; font-size:13.5px;
+      appearance:none; -webkit-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center; background-size:15px;
+    }
+
+    
+    .colgrid{ margin-top:22px; }
+    .pitem__soldnote{
+      padding:0 14px 14px;
+      font-size:13px; font-weight:700; color:var(--muted);
+    }
+    @keyframes card-in{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+    .pitem{ animation:card-in .4s ease backwards; }
+
+    
+    .loadmore{ padding:26px 0 8px; }
+    .loadmore .pgrid > div{ aspect-ratio:4/5; border-radius:var(--r); }
+
+    
+    .colindex{
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px; margin-top:22px;
+    }
+    @media (min-width:640px){ .colindex{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; } }
+    @media (min-width:960px){ .colindex{ grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; } }
+    .colcard{
+      position:relative; display:flex; flex-direction:column;
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--r); overflow:hidden;
+      transition:box-shadow .18s ease, transform .18s ease;
+    }
+    .colcard:hover{ box-shadow:var(--shadow); transform:translateY(-2px); }
+    .colcard__media{
+      position:relative; aspect-ratio:4/3; background:var(--paper); overflow:hidden;
+    }
+    .colcard__media img{
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .35s ease;
+    }
+    .colcard:hover .colcard__media img{ transform:scale(1.04); }
+    .colcard__body{
+      display:flex; align-items:center; gap:10px;
+      padding:12px 14px 13px;
+    }
+    .colcard__icon{
+      width:34px; height:34px; flex:none;
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius:11px; background:var(--accent-soft); color:var(--accent);
+    }
+    .colcard__icon svg{ width:17px; height:17px; }
+    .colcard__name{ flex:1; min-width:0; font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
+    .colcard__count{ flex:none; font-size:12px; font-weight:700; color:var(--muted-warm); }

@@ -1,0 +1,48 @@
+import { productById } from './catalog';
+
+export type CartItem = { productId: number; quantity: number; message: string };
+export const deliveryModes = {
+  padrao: { label: 'Entrega padrão', description: 'Frete grátis · no dia selecionado', cents: 0 },
+  expressa: { label: 'Entrega expressa', description: 'Em até 90 minutos · simulação', cents: 1490 },
+  vip: { label: 'Entrega VIP', description: 'Em até 30 minutos · simulação', cents: 2990 },
+  agendada: { label: 'Entrega agendada', description: 'Escolha o melhor dia para surpreender', cents: 0 },
+};
+export type DeliveryMode = keyof typeof deliveryModes;
+export const itemKey = (item: CartItem) => JSON.stringify([item.productId, item.message]);
+
+export function validateQuantity(quantity: number): void {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) throw new Error('Escolha uma quantidade inteira entre 1 e 99.');
+}
+
+export function addItem(cart: CartItem[], productId: number, quantity = 1, message = ''): CartItem[] {
+  validateQuantity(quantity);
+  const product = productById(productId);
+  if (product.sold_out) throw new Error('Este produto está esgotado.');
+  if (message.length > 200) throw new Error('A mensagem deve ter no máximo 200 caracteres.');
+  const item = { productId, quantity, message: message.trim() };
+  const existing = cart.find((line) => itemKey(line) === itemKey(item));
+  if (!existing) return [...cart, item];
+  validateQuantity(existing.quantity + quantity);
+  return cart.map((line) => itemKey(line) === itemKey(item) ? { ...line, quantity: line.quantity + quantity } : line);
+}
+
+export function changeQuantity(cart: CartItem[], key: string, quantity: number): CartItem[] {
+  validateQuantity(quantity);
+  return cart.map((line) => itemKey(line) === key ? { ...line, quantity } : line);
+}
+
+export function couponRate(code: string): number {
+  if (!code.trim()) return 0;
+  if (code.trim().toUpperCase() === 'FLORES10') return 0.1;
+  throw new Error('Cupom inválido. Na demonstração, use FLORES10.');
+}
+
+export function quote(cart: CartItem[], mode: DeliveryMode, coupon: string) {
+  const subtotal = cart.reduce((total, item) => {
+    validateQuantity(item.quantity);
+    return total + productById(item.productId).price_cents * item.quantity;
+  }, 0);
+  const discount = Math.round(subtotal * couponRate(coupon));
+  const shipping = cart.length ? deliveryModes[mode].cents : 0;
+  return { subtotal, discount, shipping, total: subtotal - discount + shipping };
+}
