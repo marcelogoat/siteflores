@@ -1,40 +1,38 @@
-import { geoResponse } from '../src/server/geo';
+export const config = { runtime: 'edge' };
 
-type HeaderValue = string | string[] | undefined;
-type VercelRequest = { method?: string; headers: Record<string, HeaderValue> };
-type VercelResponse = {
-  status: (code: number) => VercelResponse;
-  setHeader: (name: string, value: string) => void;
-  send: (body: string) => void;
+const states = new Set([
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+]);
+
+const jsonHeaders = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'private, no-store' };
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: jsonHeaders });
+const decode = (value: string | null) => {
+  if (!value) return '';
+  try { return decodeURIComponent(value).trim(); } catch { return value.trim(); }
 };
+const uf = (value: string | null) => decode(value).toUpperCase().match(/^(?:BR-)?([A-Z]{2})$/)?.[1] ?? '';
 
-const header = (value: HeaderValue) => Array.isArray(value) ? value[0] : value;
-const decode = (value: HeaderValue) => {
-  const text = header(value);
-  if (!text) return undefined;
-  try { return decodeURIComponent(text); } catch { return text; }
-};
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(request: Request) {
+  if (request.method !== 'GET') return new Response('Método não permitido.', { status: 405 });
   try {
-    if (req.method !== 'GET') {
-      res.status(405).send('Método não permitido.');
-      return;
-    }
-    const forwarded = header(req.headers['x-forwarded-for'])?.split(',')[0]?.trim();
-    const response = await geoResponse({
-      ip: header(req.headers['x-real-ip']) ?? header(req.headers['x-vercel-forwarded-for']) ?? forwarded,
-      city: decode(req.headers['x-vercel-ip-city']),
-      regionCode: header(req.headers['x-vercel-ip-country-region']),
-      country: header(req.headers['x-vercel-ip-country']),
-    });
-    res.status(response.status);
-    response.headers.forEach((value, name) => res.setHeader(name, value));
-    res.send(await response.text());
+    const city = decode(request.headers.get('x-vercel-ip-city'));
+    const region = uf(request.headers.get('x-vercel-ip-country-region'));
+    const country = decode(request.headers.get('x-vercel-ip-country')).toUpperCase();
+    if (country === 'BR' && city.length >= 2 && city.length <= 80 && states.has(region)) return json({ city, region });
+
+    const forwarded = (request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim().replace(/^::ffff:/i, '');
+    const ip = forwarded && /^[\da-fA-F:.]+$/.test(forwarded) ? forwarded : '';
+    const response = await fetch(ip ? `https://ipwho.is/${encodeURIComponent(ip)}` : 'https://ipwho.is/', { headers: { accept: 'application/json' } });
+    const payload: unknown = await response.json();
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return json({ error: 'Não foi possível detectar sua cidade.' }, 502);
+    const data = payload as Record<string, unknown>;
+    if (data.success !== true || String(data.country_code ?? '').toUpperCase() !== 'BR') return json({ error: 'Não foi possível detectar sua cidade.' }, 502);
+    const name = typeof data.city === 'string' ? data.city.trim() : '';
+    const code = uf(typeof data.region_code === 'string' ? data.region_code : null);
+    if (!name || !states.has(code)) return json({ error: 'Não foi possível detectar sua cidade.' }, 502);
+    return json({ city: name, region: code });
   } catch {
-    res.status(502);
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'private, no-store');
-    res.send(JSON.stringify({ error: 'Não foi possível detectar sua cidade.' }));
+    return json({ error: 'Não foi possível detectar sua cidade.' }, 502);
   }
 }
