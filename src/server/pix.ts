@@ -4,6 +4,11 @@ import { isDeliveryMode } from '../domain/storage';
 import { quote, type CartItem } from '../domain/commerce';
 
 const API_URL = 'https://api.blackcatoficial.com/api';
+export const gatewayKey = (provided?: string) => {
+  const key = provided && provided.startsWith('sk_') ? provided : process.env.BLACKCAT_SECRET_KEY ?? '';
+  if (!key.startsWith('sk_')) throw new Error('Gateway PIX não configurado.');
+  return key;
+};
 const jsonHeaders = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store' };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: jsonHeaders });
 const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -46,21 +51,21 @@ function cartFrom(value: unknown): CartItem[] {
 }
 
 async function blackcat(path: string, apiKey: string, init?: RequestInit): Promise<Response> {
-  if (!apiKey || !apiKey.startsWith('sk_')) throw new Error('Gateway PIX não configurado.');
+  const key = gatewayKey(apiKey);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
   try {
     return await fetch(`${API_URL}${path}`, {
       ...init,
       signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey, ...init?.headers },
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': key, ...init?.headers },
     });
   } finally {
     clearTimeout(timeout);
   }
 }
 
-export async function createPixResponse(request: Request, apiKey: string): Promise<Response> {
+export async function createPixResponse(request: Request, apiKey = ''): Promise<Response> {
   if (request.method !== 'POST') return json({ error: 'Método não permitido.' }, 405);
   try {
     const raw: unknown = await request.json();
@@ -68,7 +73,10 @@ export async function createPixResponse(request: Request, apiKey: string): Promi
     if (!text(raw.coupon, 40)) return json({ error: 'Cupom inválido.' }, 400);
     const checkout = checkoutFrom(raw.checkout);
     const cart = cartFrom(raw.cart);
-    const totals = quote(cart, checkout.mode, raw.coupon);
+    const extraCents = typeof raw.extraCents === 'number' && Number.isSafeInteger(raw.extraCents) && raw.extraCents >= 0 ? raw.extraCents : 0;
+    const expectedBump = extraCents > 0 ? Math.round(productById(cart[0].productId).price_cents * .7) : 0;
+    if (extraCents !== expectedBump) return json({ error: 'Oferta adicional inválida.' }, 400);
+    const totals = quote(cart, checkout.mode, raw.coupon, extraCents);
     if (totals.total < 100 || totals.total > 10_000_000) return json({ error: 'Valor do pedido inválido.' }, 400);
     const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
     const upstream = await blackcat('/sales/create-sale', apiKey, {
@@ -137,10 +145,10 @@ export async function createPixResponse(request: Request, apiKey: string): Promi
   }
 }
 
-export async function pixStatusResponse(transactionId: string, apiKey: string): Promise<Response> {
+export async function pixStatusResponse(transactionId: string, apiKey = ''): Promise<Response> {
   if (!/^[A-Za-z0-9_-]{6,120}$/.test(transactionId)) return json({ error: 'Transação inválida.' }, 400);
   try {
-    const upstream = await blackcat(`/sales/${encodeURIComponent(transactionId)}/status`, apiKey);
+    const upstream = await blackcat(`/sales/${encodeURIComponent(transactionId)}/status`, gatewayKey(apiKey));
     const result: unknown = await upstream.json().catch(() => null);
     if (!upstream.ok || !record(result) || result.success !== true || !record(result.data) || !text(result.data.status, 20) || typeof result.data.amount !== 'number' || !Number.isSafeInteger(result.data.amount)) return json({ error: 'Não foi possível consultar o pagamento.' }, 502);
     const status = result.data.status;

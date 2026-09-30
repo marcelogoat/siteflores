@@ -15,11 +15,16 @@ export function CheckoutPage() {
   const { data, transact } = useStore();
   const navigate = useNavigate();
   const form = useRef<HTMLFormElement>(null);
+  const recipientRef = useRef<HTMLSectionElement>(null);
+  const didScrollToRecipient = useRef(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [values, setValues] = useState<CheckoutData>({ ...emptyCheckout, mensagem: data.cardMessage, cidade: data.city?.name ?? '', estado: data.city?.uf ?? '', nome: data.profile?.name ?? '', email: data.profile?.email ?? '' });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutData, string>>>({});
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [orderBump, setOrderBump] = useState(false);
+  const bumpProduct = data.cart[0] ? productById(data.cart[0].productId) : null;
+  const bumpPrice = bumpProduct ? Math.round(bumpProduct.price_cents * .7) : 0;
   const [cepStatus, setCepStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [cepMessage, setCepMessage] = useState('Digite o CEP para preencher o endereço.');
   const [emailFocused, setEmailFocused] = useState(false);
@@ -63,6 +68,16 @@ export function CheckoutPage() {
     });
     return () => controller.abort();
   }, [values.cep]);
+  useEffect(() => {
+    if (step !== 1 || didScrollToRecipient.current) return;
+    const validation = validateCheckout(values);
+    if (['nome', 'telefone', 'cpf', 'email'].some((key) => validation[key as keyof CheckoutData])) return;
+    didScrollToRecipient.current = true;
+    setEmailFocused(false);
+    const target = recipientRef.current ?? document.getElementById('recebedor');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => document.getElementById('recebedor')?.focus({ preventScroll: true }), 450);
+  }, [step, values]);
   const [emailUser = '', emailDomain = ''] = values.email.split('@');
   const emailSuggestions = values.email.includes('@') && emailUser ? emailDomains.filter((domain) => domain.startsWith(emailDomain.toLowerCase())).map((domain) => `${emailUser}@${domain}`) : [];
   const todayValue = today();
@@ -104,8 +119,9 @@ export function CheckoutPage() {
     const coupon = data.coupon;
     setPaymentLoading(true);
     try {
-      const pix = await createPix(id, cart, coupon, values);
-      const order = createOrder(values, cart, coupon, null, id, pix);
+      const bump = orderBump && bumpProduct ? { productId: bumpProduct.id, priceCents: bumpPrice } : null;
+      const pix = await createPix(id, cart, coupon, values, bump?.priceCents ?? 0);
+      const order = createOrder(values, cart, coupon, bump, id, pix);
       if (transact((state) => ({ ...state, orders: [order, ...state.orders], cart: [], coupon: '', cardMessage: '' }))) navigate(`/pagamento?id=${encodeURIComponent(id)}`);
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : 'Não foi possível gerar o PIX. Tente novamente.');
@@ -135,7 +151,7 @@ export function CheckoutPage() {
         <form id="checkout-form" ref={form} className="stack" onSubmit={submit} noValidate>
           {step === 1 && <>
             <section className="panel step"><div className="step__head"><span className="step__num">1</span><h2>Seus dados</h2></div><div className="fields">{field('nome', 'Nome e sobrenome')}<div className="row2 row2--tel">{field('telefone', 'Telefone / WhatsApp', 'tel')}{field('cpf', 'CPF')}</div><div className="field email-field"><label htmlFor="email">E-mail</label><input id="email" name="email" type="email" value={values.email} onChange={(event) => { change('email', event.target.value); setEmailFocused(true); }} onFocus={() => setEmailFocused(true)} onBlur={() => setEmailFocused(false)} autoComplete="off" required maxLength={200} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'email-error' : undefined} aria-expanded={emailFocused && emailSuggestions.length > 0} aria-controls="email-suggestions" />{emailFocused && emailSuggestions.length > 0 && <div className="email-suggestions" id="email-suggestions" role="listbox" aria-label="Sugestões de e-mail">{emailSuggestions.map((suggestion) => { const domain = suggestion.slice(emailUser.length + 1); return <button type="button" role="option" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => { change('email', suggestion); setEmailFocused(false); }}><span>{emailUser}@</span><strong>{domain}</strong></button>; })}</div>}{errors.email && <p className="field__error" id="email-error">{errors.email}</p>}</div></div></section>
-            <section className="panel step"><div className="step__head"><Icon name="gift" /><h2>Quem vai receber</h2></div><div className="fields">{field('recebedor', 'Nome de quem recebe')}<label className="field" htmlFor="mensagem">Mensagem do cartão <span className="muted">(opcional)</span><textarea id="mensagem" name="mensagem" value={values.mensagem} onChange={(event) => change('mensagem', event.target.value)} maxLength={200} rows={3} /><span className="field__hint">Vai impressa no cartão. {values.mensagem.length}/200</span></label></div></section>
+            <section className="panel step" id="quem-recebe" ref={recipientRef}><div className="step__head"><Icon name="gift" /><h2>Quem vai receber</h2></div><div className="fields">{field('recebedor', 'Nome de quem recebe')}<label className="field" htmlFor="mensagem">Mensagem do cartão <span className="muted">(opcional)</span><textarea id="mensagem" name="mensagem" value={values.mensagem} onChange={(event) => change('mensagem', event.target.value)} maxLength={200} rows={3} /><span className="field__hint">Vai impressa no cartão. {values.mensagem.length}/200</span></label></div></section>
           </>}
           {step === 2 && <>
             <section className="panel step"><div className="step__head"><span className="step__num">2</span><h2>Endereço de entrega</h2></div><div className="fields"><div className="row-cep">{field('cep', 'CEP')}<div className="cepstatus" data-state={cepStatus}>{cepStatus === 'success' && <Icon name="check" />}{cepMessage}</div></div>{field('endereco', 'Endereço (rua, avenida…)')}<div className="row2 row2--num">{field('numero', 'Número')}{field('complemento', 'Complemento', 'text', true)}</div>{field('bairro', 'Bairro')}<div className="row2">{field('cidade', 'Cidade')}<div className="field"><label htmlFor="estado">Estado</label><select id="estado" name="estado" value={values.estado} onChange={(event) => change('estado', event.target.value)} required aria-invalid={Boolean(errors.estado)} aria-describedby={errors.estado ? 'estado-error' : undefined}><option value="">UF</option>{states.map((uf) => <option key={uf}>{uf}</option>)}</select>{errors.estado && <p className="field__error" id="estado-error">{errors.estado}</p>}</div></div></div></section>
@@ -145,12 +161,17 @@ export function CheckoutPage() {
             <div className="step__head"><span className="step__num">3</span><h2>Revise seu pedido</h2></div>
             <div className="review-block"><div><h3>Identificação</h3><button type="button" onClick={() => setStep(1)}>Editar</button></div><p><strong>{values.nome}</strong><br />{values.email} · {values.telefone}</p><p>Presente para <strong>{values.recebedor}</strong></p></div>
             <div className="review-block"><div><h3>Entrega</h3><button type="button" onClick={() => setStep(2)}>Editar</button></div><p>{values.endereco}, {values.numero}{values.complemento ? ` · ${values.complemento}` : ''}<br />{values.bairro} · {values.cidade}/{values.estado} · CEP {values.cep}</p><p><strong>{deliveryModes[values.mode].label}</strong> · {deliveryModes[values.mode].cents ? money(deliveryModes[values.mode].cents) : 'Grátis'}</p></div>
+            {bumpProduct && <div className="review-block order-bump"><p className="order-bump__eyebrow">Oferta especial</p><label className={orderBump ? 'order-bump__card is-selected' : 'order-bump__card'}>
+              <input type="checkbox" checked={orderBump} onChange={(event) => setOrderBump(event.target.checked)} />
+              <span className="order-bump__check" aria-hidden="true">✓</span>
+              <span className="order-bump__content"><span className="order-bump__title">Dobre as flores do seu buquê <b>30% OFF</b></span><span className="order-bump__description">Adicione mais uma unidade de {bumpProduct.name} e deixe o presente ainda mais especial.</span><span className="order-bump__prices"><del>{money(bumpProduct.price_cents)}</del><strong>{money(bumpPrice)}</strong></span></span>
+            </label></div>}
           </section>}
           {Object.keys(errors).some((key) => errors[key as keyof CheckoutData]) && <p className="form-error" role="alert">Confira os campos destacados antes de continuar.</p>}
           {paymentError && <p className="form-error" role="alert">{paymentError}</p>}
         </form>
       </div>
-      <aside className="checkout__aside panel stack"><h2>Resumo do pedido</h2><div className="summary__items">{data.cart.map((item) => { const product = productById(item.productId); return <div className="sitem" key={itemKey(item)}><img className="sitem__img" src={product.image} alt="" /><div><p className="sitem__name">{product.name}</p><p className="sitem__qty">Quantidade: {item.quantity}</p></div><strong className="sitem__price">{money(product.price_cents * item.quantity)}</strong></div>; })}</div><hr className="hairline" /><Totals items={data.cart} mode={values.mode} coupon={data.coupon} /><div className="aside-pay"><button className="btn btn--primary btn--block btn--pay" form="checkout-form" disabled={paymentLoading}>{step === 3 && !paymentLoading && <Icon name="check" />}{paymentLoading ? 'Gerando PIX…' : actionLabel}</button></div></aside>
+      <aside className="checkout__aside panel stack"><h2>Resumo do pedido</h2><div className="summary__items">{data.cart.map((item) => { const product = productById(item.productId); return <div className="sitem" key={itemKey(item)}><img className="sitem__img" src={product.image} alt="" /><div><p className="sitem__name">{product.name}</p><p className="sitem__qty">Quantidade: {item.quantity}</p></div><strong className="sitem__price">{money(product.price_cents * item.quantity)}</strong></div>; })}</div><hr className="hairline" /><Totals items={data.cart} mode={values.mode} coupon={data.coupon} extraCents={orderBump ? bumpPrice : 0} extraLabel="Flores extras (30% OFF)" /><div className="aside-pay"><button className="btn btn--primary btn--block btn--pay" form="checkout-form" disabled={paymentLoading}>{step === 3 && !paymentLoading && <Icon name="check" />}{paymentLoading ? 'Gerando PIX…' : actionLabel}</button></div></aside>
     </main>
     <div className="paybar"><button className="btn btn--primary btn--block btn--pay" form="checkout-form" disabled={paymentLoading}>{step === 3 && !paymentLoading && <Icon name="check" />}{paymentLoading ? 'Gerando PIX…' : actionLabel}</button><p className="pay-hint">Etapa {step} de 3 · {step === 3 ? 'revise e confirme seu pedido' : 'seus dados ficam salvos ao avançar'}</p></div>
   </PageFrame>;

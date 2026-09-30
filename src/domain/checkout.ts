@@ -10,7 +10,7 @@ export const emptyCheckout: CheckoutData = {
   nome: '', telefone: '', cpf: '', email: '', recebedor: '', mensagem: '', cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '', data: '', periodo: '', mode: 'padrao',
 };
 export const demoCheckout: CheckoutData = {
-  nome: 'Cliente Demonstração', telefone: '(11) 999990000', cpf: '529.982.247-25', email: 'cliente@example.com', recebedor: 'Pessoa Especial', mensagem: 'Um carinho para deixar seu dia mais bonito!', cep: '01310-100', endereco: 'Avenida Exemplo', numero: '123', complemento: '', bairro: 'Jardim das Flores', cidade: 'São Paulo', estado: 'SP', data: '', periodo: '', mode: 'padrao',
+  nome: 'Cliente Demonstração', telefone: '(11) 99999-0000', cpf: '529.982.247-25', email: 'cliente@example.com', recebedor: 'Pessoa Especial', mensagem: 'Um carinho para deixar seu dia mais bonito!', cep: '01310-100', endereco: 'Avenida Exemplo', numero: '123', complemento: '', bairro: 'Jardim das Flores', cidade: 'São Paulo', estado: 'SP', data: '', periodo: '', mode: 'padrao',
 };
 export const today = () => {
   const date = new Date();
@@ -20,8 +20,10 @@ const validDdds = new Set(['11', '12', '13', '14', '15', '16', '17', '18', '19',
 const onlyDigits = (value: string) => value.replace(/\D/g, '');
 export const formatPhone = (value: string) => {
   const number = onlyDigits(value).slice(0, 11);
-  if (number.length <= 2) return number ? `(${number}` : '';
-  return `(${number.slice(0, 2)}) ${number.slice(2)}`;
+  if (!number) return '';
+  if (number.length <= 2) return `(${number}`;
+  if (number.length <= 7) return `(${number.slice(0, 2)}) ${number.slice(2)}`;
+  return `(${number.slice(0, 2)}) ${number.slice(2, 7)}-${number.slice(7)}`;
 };
 export const formatCpf = (value: string) => {
   const number = onlyDigits(value).slice(0, 11);

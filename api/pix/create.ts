@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req.body ?? {}),
   });
-  const response = await createPixResponse(request, process.env.BLACKCAT_SECRET_KEY ?? '');
+  const response = await createPixResponse(request, process.env.BLACKCAT_SECRET_KEY);
   res.status(response.status);
   response.headers.forEach((value, name) => res.setHeader(name, value));
   res.send(await response.text());

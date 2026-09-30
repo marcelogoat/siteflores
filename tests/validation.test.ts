@@ -41,7 +41,7 @@ test('checkout aceita dados demonstrativos e rejeita CPF repetido, UF inexistent
   expect(errors.cep).toBeDefined();
 });
 test('formata dados brasileiros e exige nome completo e celular com DDD válido', () => {
-  expect(formatPhone('11999990000')).toBe('(11) 999990000');
+  expect(formatPhone('11999990000')).toBe('(11) 99999-0000');
   expect(formatCpf('52998224725')).toBe('529.982.247-25');
   expect(formatCep('01310100')).toBe('01310-100');
   expect(validateCheckout({ ...demoCheckout, nome: 'Marcelo' }).nome).toBeDefined();

@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const value = req.query.transactionId;
   const transactionId = Array.isArray(value) ? value[0] : value ?? '';
-  const response = await pixStatusResponse(transactionId, process.env.BLACKCAT_SECRET_KEY ?? '');
+  const response = await pixStatusResponse(transactionId, process.env.BLACKCAT_SECRET_KEY);
   res.status(response.status);
   response.headers.forEach((headerValue, name) => res.setHeader(name, headerValue));
   res.send(await response.text());
