@@ -1,5 +1,3 @@
-import { states } from './checkout';
-
 export type City = { name: string; uf: string };
 const stateCodesByName: Record<string, string> = {
   acre: 'AC', alagoas: 'AL', amapá: 'AP', amazonas: 'AM', bahia: 'BA', ceará: 'CE',
@@ -9,13 +7,15 @@ const stateCodesByName: Record<string, string> = {
   'rio grande do norte': 'RN', 'rio grande do sul': 'RS', rondônia: 'RO', roraima: 'RR',
   'santa catarina': 'SC', 'são paulo': 'SP', sergipe: 'SE', tocantins: 'TO',
 };
+export const states = [...new Set(Object.values(stateCodesByName))];
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const cleanText = (value: unknown): string | null => typeof value === 'string' && value.trim().length >= 2 && value.trim().length <= 80 ? value.trim() : null;
+const normalizeUf = (value: unknown): string => typeof value === 'string' ? value.toUpperCase().match(/^(?:BR-)?([A-Z]{2})$/)?.[1] ?? '' : '';
 
 export function parseGeoLocation(value: unknown): City {
   if (!isRecord(value)) throw new Error('Resposta de localização inválida.');
   const name = cleanText(value.city);
-  const uf = typeof value.region === 'string' ? value.region.toUpperCase() : '';
+  const uf = normalizeUf(value.region);
   if (!name || !states.includes(uf)) throw new Error('A localização não contém uma cidade e uma UF válidas.');
   return { name, uf };
 }

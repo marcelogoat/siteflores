@@ -4,22 +4,36 @@ type GeoInput = { ip?: string | null; city?: unknown; regionCode?: unknown; coun
 type GeoResult = { city: string; region: string };
 type GeoFetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
-export async function resolveGeo(input: GeoInput, fetcher: GeoFetcher = fetch): Promise<GeoResult> {
-  const ip = typeof input.ip === 'string' && input.ip.length <= 45 && /^[\da-fA-F:.]+$/.test(input.ip) ? input.ip : null;
+function normalizeIp(value?: string | null): string | null {
+  if (!value) return null;
+  const ip = value.trim().replace(/^::ffff:/i, '').split('%')[0];
+  return ip.length > 0 && ip.length <= 45 && /^[\da-fA-F:.]+$/.test(ip) ? ip : null;
+}
+
+function fromPlatform(input: GeoInput): GeoResult | null {
+  if (String(input.country ?? '').toUpperCase() !== 'BR') return null;
   try {
-    const response = await fetcher(ip ? `https://ipwho.is/${encodeURIComponent(ip)}` : 'https://ipwho.is/', {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(5500),
-    });
-    if (!response.ok) throw new Error('Não foi possível consultar a cidade pelo IP.');
-    const payload: unknown = await response.json();
-    const { name, uf } = parseIpLocation(payload);
-    return { city: name, region: uf };
-  } catch {
-    if (input.country !== 'BR') throw new Error('Não foi possível detectar uma cidade brasileira.');
     const { name, uf } = parseGeoLocation({ city: input.city, region: input.regionCode });
     return { city: name, region: uf };
+  } catch {
+    return null;
   }
+}
+
+export async function resolveGeo(input: GeoInput, fetcher: GeoFetcher = fetch): Promise<GeoResult> {
+  const platform = fromPlatform(input);
+  if (platform) return platform;
+  const ip = normalizeIp(input.ip);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5500);
+  const response = await fetcher(ip ? `https://ipwho.is/${encodeURIComponent(ip)}` : 'https://ipwho.is/', {
+    headers: { accept: 'application/json' },
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeout));
+  if (!response.ok) throw new Error('Não foi possível consultar a cidade pelo IP.');
+  const payload: unknown = await response.json();
+  const { name, uf } = parseIpLocation(payload);
+  return { city: name, region: uf };
 }
 
 export async function geoResponse(input: GeoInput, fetcher: GeoFetcher = fetch): Promise<Response> {

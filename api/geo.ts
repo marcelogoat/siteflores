@@ -16,18 +16,25 @@ const decode = (value: HeaderValue) => {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET') {
-    res.status(405).send('Método não permitido.');
-    return;
+  try {
+    if (req.method !== 'GET') {
+      res.status(405).send('Método não permitido.');
+      return;
+    }
+    const forwarded = header(req.headers['x-forwarded-for'])?.split(',')[0]?.trim();
+    const response = await geoResponse({
+      ip: header(req.headers['x-real-ip']) ?? header(req.headers['x-vercel-forwarded-for']) ?? forwarded,
+      city: decode(req.headers['x-vercel-ip-city']),
+      regionCode: header(req.headers['x-vercel-ip-country-region']),
+      country: header(req.headers['x-vercel-ip-country']),
+    });
+    res.status(response.status);
+    response.headers.forEach((value, name) => res.setHeader(name, value));
+    res.send(await response.text());
+  } catch {
+    res.status(502);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.send(JSON.stringify({ error: 'Não foi possível detectar sua cidade.' }));
   }
-  const forwarded = header(req.headers['x-forwarded-for'])?.split(',')[0]?.trim();
-  const response = await geoResponse({
-    ip: header(req.headers['x-vercel-forwarded-for']) ?? forwarded,
-    city: decode(req.headers['x-vercel-ip-city']),
-    regionCode: header(req.headers['x-vercel-ip-country-region']),
-    country: header(req.headers['x-vercel-ip-country']),
-  });
-  res.status(response.status);
-  response.headers.forEach((value, name) => res.setHeader(name, value));
-  res.send(await response.text());
 }

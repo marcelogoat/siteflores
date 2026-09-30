@@ -16,19 +16,28 @@ test('valida a lista de municípios do IBGE', () => {
   expect(() => parseCities([{ nome: '' }])).toThrow();
 });
 
-test('o servidor consulta o IP com ipwho.is e responde apenas cidade e UF', async () => {
+test('o servidor usa a cidade da plataforma quando o país é o Brasil', async () => {
   const urls: string[] = [];
   const fakeFetch = async (input: string): Promise<Response> => {
     urls.push(String(input));
     return Response.json({ success: true, country_code: 'BR', city: 'Curitiba', region_code: 'PR' });
   };
-  const result = await resolveGeo({ ip: '203.0.113.42', country: 'BR' }, fakeFetch);
+  expect(await resolveGeo({ ip: '203.0.113.42', country: 'BR', city: 'Londrina', regionCode: 'BR-PR' }, fakeFetch)).toEqual({ city: 'Londrina', region: 'PR' });
+  expect(urls).toEqual([]);
+});
+
+test('o servidor consulta o IP com ipwho.is quando a plataforma não informa a cidade', async () => {
+  const urls: string[] = [];
+  const fakeFetch = async (input: string): Promise<Response> => {
+    urls.push(String(input));
+    return Response.json({ success: true, country_code: 'BR', city: 'Curitiba', region_code: 'PR' });
+  };
+  const result = await resolveGeo({ ip: '::ffff:203.0.113.42' }, fakeFetch);
   expect(urls).toEqual(['https://ipwho.is/203.0.113.42']);
   expect(result).toEqual({ city: 'Curitiba', region: 'PR' });
 });
 
-test('o servidor usa a cidade da Cloudflare quando o serviço falha', async () => {
+test('o servidor falha quando não há cidade da plataforma nem resposta válida do IP', async () => {
   const fakeFetch = async (): Promise<Response> => { throw new Error('indisponível'); };
-  expect(await resolveGeo({ ip: '203.0.113.42', country: 'BR', city: 'Londrina', regionCode: 'PR' }, fakeFetch)).toEqual({ city: 'Londrina', region: 'PR' });
   await expect(resolveGeo({ ip: '203.0.113.42', country: 'BR' }, fakeFetch)).rejects.toThrow();
 });
