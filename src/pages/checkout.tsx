@@ -15,7 +15,6 @@ export function CheckoutPage() {
   const { data, transact } = useStore();
   const navigate = useNavigate();
   const form = useRef<HTMLFormElement>(null);
-  const recipientRef = useRef<HTMLSectionElement>(null);
   const didScrollToRecipient = useRef(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [values, setValues] = useState<CheckoutData>({ ...emptyCheckout, mensagem: data.cardMessage, cidade: data.city?.name ?? '', estado: data.city?.uf ?? '', nome: data.profile?.name ?? '', email: data.profile?.email ?? '' });
@@ -74,7 +73,7 @@ export function CheckoutPage() {
     if (['nome', 'telefone', 'cpf', 'email'].some((key) => validation[key as keyof CheckoutData])) return;
     didScrollToRecipient.current = true;
     setEmailFocused(false);
-    const target = recipientRef.current ?? document.getElementById('recebedor');
+    const target = document.getElementById('quem-recebe') ?? document.getElementById('recebedor');
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     window.setTimeout(() => document.getElementById('recebedor')?.focus({ preventScroll: true }), 450);
   }, [step, values]);
@@ -151,7 +150,7 @@ export function CheckoutPage() {
         <form id="checkout-form" ref={form} className="stack" onSubmit={submit} noValidate>
           {step === 1 && <>
             <section className="panel step"><div className="step__head"><span className="step__num">1</span><h2>Seus dados</h2></div><div className="fields">{field('nome', 'Nome e sobrenome')}<div className="row2 row2--tel">{field('telefone', 'Telefone / WhatsApp', 'tel')}{field('cpf', 'CPF')}</div><div className="field email-field"><label htmlFor="email">E-mail</label><input id="email" name="email" type="email" value={values.email} onChange={(event) => { change('email', event.target.value); setEmailFocused(true); }} onFocus={() => setEmailFocused(true)} onBlur={() => setEmailFocused(false)} autoComplete="off" required maxLength={200} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'email-error' : undefined} aria-expanded={emailFocused && emailSuggestions.length > 0} aria-controls="email-suggestions" />{emailFocused && emailSuggestions.length > 0 && <div className="email-suggestions" id="email-suggestions" role="listbox" aria-label="Sugestões de e-mail">{emailSuggestions.map((suggestion) => { const domain = suggestion.slice(emailUser.length + 1); return <button type="button" role="option" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => { change('email', suggestion); setEmailFocused(false); }}><span>{emailUser}@</span><strong>{domain}</strong></button>; })}</div>}{errors.email && <p className="field__error" id="email-error">{errors.email}</p>}</div></div></section>
-            <section className="panel step" id="quem-recebe" ref={recipientRef}><div className="step__head"><Icon name="gift" /><h2>Quem vai receber</h2></div><div className="fields">{field('recebedor', 'Nome de quem recebe')}<label className="field" htmlFor="mensagem">Mensagem do cartão <span className="muted">(opcional)</span><textarea id="mensagem" name="mensagem" value={values.mensagem} onChange={(event) => change('mensagem', event.target.value)} maxLength={200} rows={3} /><span className="field__hint">Vai impressa no cartão. {values.mensagem.length}/200</span></label></div></section>
+            <section className="panel step" id="quem-recebe"><div className="step__head"><Icon name="gift" /><h2>Quem vai receber</h2></div><div className="fields">{field('recebedor', 'Nome de quem recebe')}<label className="field" htmlFor="mensagem">Mensagem do cartão <span className="muted">(opcional)</span><textarea id="mensagem" name="mensagem" value={values.mensagem} onChange={(event) => change('mensagem', event.target.value)} maxLength={200} rows={3} /><span className="field__hint">Vai impressa no cartão. {values.mensagem.length}/200</span></label></div></section>
           </>}
           {step === 2 && <>
             <section className="panel step"><div className="step__head"><span className="step__num">2</span><h2>Endereço de entrega</h2></div><div className="fields"><div className="row-cep">{field('cep', 'CEP')}<div className="cepstatus" data-state={cepStatus}>{cepStatus === 'success' && <Icon name="check" />}{cepMessage}</div></div>{field('endereco', 'Endereço (rua, avenida…)')}<div className="row2 row2--num">{field('numero', 'Número')}{field('complemento', 'Complemento', 'text', true)}</div>{field('bairro', 'Bairro')}<div className="row2">{field('cidade', 'Cidade')}<div className="field"><label htmlFor="estado">Estado</label><select id="estado" name="estado" value={values.estado} onChange={(event) => change('estado', event.target.value)} required aria-invalid={Boolean(errors.estado)} aria-describedby={errors.estado ? 'estado-error' : undefined}><option value="">UF</option>{states.map((uf) => <option key={uf}>{uf}</option>)}</select>{errors.estado && <p className="field__error" id="estado-error">{errors.estado}</p>}</div></div></div></section>
