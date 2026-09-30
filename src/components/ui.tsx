@@ -32,9 +32,9 @@ export function Modal({ title, open, onClose, children, drawer = false, classNam
 export function EmptyState({ title, text, to = '/', label = 'Escolher flores', icon = 'bag' }: { title: string; text: string; to?: string; label?: string; icon?: IconName }) {
   return <div className="empty-state stack"><Icon name={icon} /><h1>{title}</h1><p className="muted">{text}</p><Link className="btn btn--primary" to={to}>{label}</Link></div>;
 }
-export function Totals({ items, mode = 'padrao', coupon = '' }: { items: CartItem[]; mode?: DeliveryMode; coupon?: string }) {
-  const totals = quote(items, mode, coupon);
-  return <div className="stack"><p className="summary__line"><span className="muted">Subtotal</span><span>{money(totals.subtotal)}</span></p>{totals.discount > 0 && <p className="summary__line"><span>Desconto</span><span className="summary__free">− {money(totals.discount)}</span></p>}<p className="summary__line"><span className="muted">Entrega</span><span className="summary__free">{totals.shipping ? money(totals.shipping) : 'Grátis'}</span></p><hr className="hairline" /><p className="summary__line summary__total"><span>Total</span><strong>{money(totals.total)}</strong></p></div>;
+export function Totals({ items, mode = 'padrao', coupon = '', extraCents = 0, extraLabel = 'Adicional' }: { items: CartItem[]; mode?: DeliveryMode; coupon?: string; extraCents?: number; extraLabel?: string }) {
+  const totals = quote(items, mode, coupon, extraCents);
+  return <div className="stack"><p className="summary__line"><span className="muted">Subtotal</span><span>{money(totals.subtotal)}</span></p>{totals.discount > 0 && <p className="summary__line"><span>Desconto</span><span className="summary__free">− {money(totals.discount)}</span></p>}{totals.extra > 0 && <p className="summary__line"><span>{extraLabel}</span><span>{money(totals.extra)}</span></p>}<p className="summary__line"><span className="muted">Entrega</span><span className="summary__free">{totals.shipping ? money(totals.shipping) : 'Grátis'}</span></p><hr className="hairline" /><p className="summary__line summary__total"><span>Total</span><strong>{money(totals.total)}</strong></p></div>;
 }
 export function DemoNotice({ children }: { children?: ReactNode }) {
   return <div className="demo-notice"><Icon name="doc" /><p>{children ?? 'Demonstração de front-end. Use dados fictícios. Nenhuma cobrança, entrega ou mensagem real será realizada.'}</p></div>;

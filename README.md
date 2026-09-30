@@ -13,6 +13,8 @@ bun run dev
 
 Abra o endereço exibido pelo Vite, normalmente `http://localhost:5173`.
 
+Crie `.env.local` a partir de `.env.example` e configure `BLACKCAT_SECRET_KEY`. A chave é usada somente pelos endpoints do servidor e nunca é incluída no bundle do navegador. Na Cloudflare Pages, cadastre o mesmo nome em **Settings → Variables and Secrets** como secret.
+
 ## Verificar
 
 ```sh
@@ -28,7 +30,7 @@ Os testes de domínio e integridade usam o runner do Bun. A verificação TypeSc
 1. Escolha um produto, personalize o cartão e adicione à sacola.
 2. Na sacola, escreva uma mensagem opcional gratuita para o cartão (até 200 caracteres), altere quantidades e experimente o cupom demonstrativo `FLORES10`.
 3. No checkout, use o botão de dados fictícios e escolha a entrega.
-4. Selecione PIX ou cartão e simule aprovação ou recusa, sem cobrança.
+4. No PIX, confira o QR Code real gerado pela Blackcat; o status é atualizado automaticamente. O cartão continua demonstrativo.
 5. Abra a confirmação e o acompanhamento; avance a entrega pela simulação.
 6. Consulte os pedidos em Minha conta e crie um chamado local no atendimento.
 7. Em Minha conta, limpe os dados locais para reiniciar a demonstração.
@@ -46,7 +48,7 @@ Os pedidos persistem somente neste navegador. O acompanhamento não consulta ped
 
 ## Limites
 
-Não há backend de comércio, autenticação, consulta de CEP/cobertura, envio de mensagens ou integração financeira. Existe apenas o endpoint de localização `/api/geo`; ele compartilha o IP público com ipwho.is, sem solicitar GPS nem consultar a loja de referência. Não informe dados pessoais reais. CPF não é salvo nos pedidos; os demais dados preenchidos são locais e acessíveis a quem usa o navegador. Não são solicitados dados de cartão. A referência demonstrativa de pagamento não é um código PIX.
+Não há autenticação, banco de dados central, consulta de cobertura ou envio de mensagens. Os endpoints `/api/pix/create` e `/api/pix/status/:id` integram o PIX da Blackcat pelo servidor; a chave secreta não é exposta ao navegador. O CPF é enviado ao gateway para gerar o PIX, mas não é salvo no pedido local. Os demais dados do pedido permanecem neste navegador. A confirmação ocorre por consulta periódica; para operação em escala, recomenda-se persistência no servidor e webhook idempotente.
 
 A identidade e os materiais da referência foram reproduzidos para avaliação visual; confirme os direitos de uso antes de publicação. Os textos institucionais reproduzidos não representam políticas operacionais desta demonstração.
 

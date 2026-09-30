@@ -48,6 +48,9 @@ test('TSX é sintaticamente válido e todos os imports locais existem', () => {
     if (file.replaceAll('\\', '/').endsWith('/domain/geolocation.ts')) {
       expect(source.match(/fetch\(/g)).toEqual(['fetch(', 'fetch(']);
       expect([...source.matchAll(/https?:\/\/[^\s`"'?]+/g)].map(([url]) => url)).toEqual(['https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios']);
+    } else if (file.replaceAll('\\', '/').endsWith('/domain/checkout.ts')) {
+      expect(source.match(/fetch\(/g)).toEqual(['fetch(']);
+      expect([...source.matchAll(/https?:\/\/[^\s`"'?]+/g)].map(([url]) => url)).toEqual(['https://viacep.com.br/ws/${number}/json/']);
     } else if (file.replaceAll('\\', '/').endsWith('/server/geo.ts')) {
       expect([...source.matchAll(/https?:\/\/[^\s`"'?]+/g)].every(([url]) => url.startsWith('https://ipwho.is/'))).toBe(true);
     } else {

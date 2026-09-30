@@ -2,7 +2,7 @@ import { productById } from './catalog';
 
 export type CartItem = { productId: number; quantity: number; message: string };
 export const deliveryModes = {
-  padrao: { label: 'Entrega padrão', description: 'Frete grátis · no dia selecionado', cents: 0 },
+  padrao: { label: 'Entrega Grátis', description: 'Chega entre 2 a 3 horas', cents: 0 },
   expressa: { label: 'Entrega expressa', description: 'Em até 90 minutos · simulação', cents: 1490 },
   vip: { label: 'Entrega VIP', description: 'Em até 30 minutos · simulação', cents: 2990 },
   agendada: { label: 'Entrega agendada', description: 'Escolha o melhor dia para surpreender', cents: 0 },
@@ -37,12 +37,13 @@ export function couponRate(code: string): number {
   throw new Error('Cupom inválido. Na demonstração, use FLORES10.');
 }
 
-export function quote(cart: CartItem[], mode: DeliveryMode, coupon: string) {
+export function quote(cart: CartItem[], mode: DeliveryMode, coupon: string, extraCents = 0) {
+  if (!Number.isSafeInteger(extraCents) || extraCents < 0) throw new Error('Valor adicional inválido.');
   const subtotal = cart.reduce((total, item) => {
     validateQuantity(item.quantity);
     return total + productById(item.productId).price_cents * item.quantity;
   }, 0);
   const discount = Math.round(subtotal * couponRate(coupon));
   const shipping = cart.length ? deliveryModes[mode].cents : 0;
-  return { subtotal, discount, shipping, total: subtotal - discount + shipping };
+  return { subtotal, discount, shipping, extra: extraCents, total: subtotal - discount + shipping + extraCents };
 }

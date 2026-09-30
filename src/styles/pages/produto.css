@@ -38,7 +38,7 @@
     .pdp__media .pitem__tag{ top:14px; left:14px; }
 
     
-    .pdp__info{ display:flex; flex-direction:column; gap:16px; animation:pdp-fade .5s ease .08s both; }
+    .pdp__info{ display:flex; flex-direction:column; gap:16px; }
     @keyframes pdp-rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
     @keyframes pdp-fade{ from{ opacity:0; } to{ opacity:1; } }
 
@@ -118,10 +118,9 @@
       bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
       display:flex; align-items:center; gap:14px;
       padding:11px 18px;
-      background:rgba(255,255,255,.94);
-      -webkit-backdrop-filter:saturate(160%) blur(10px);
-      backdrop-filter:saturate(160%) blur(10px);
+      background:#fff;
       border-top:1px solid var(--line);
+      box-shadow:0 -8px 24px rgba(12,12,12,.08);
     }
     .buybar__total small{
       display:block; font-size:10.5px; font-weight:700; color:var(--muted-warm);
@@ -129,16 +128,21 @@
     .buybar__total strong{
       display:block; font-size:18px; font-weight:800; letter-spacing:-.01em; color:var(--accent);
     }
-    .buybar__btn{ flex:1; min-height:52px; border-radius:999px; font-size:15px; }
-    @media (max-width:859.98px){
-      body.has-buybar{ padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 104px); }
-      body.has-buybar .cookiebar{ bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 90px); }
+    .buybar__total{ flex:none; }
+    .buybar__btn{ flex:1; min-width:0; min-height:52px; border-radius:999px; font-size:15px; }
+    @media (max-width:420px){
+      .product-page{ padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 104px); }
+      .buybar{ gap:10px; padding-inline:14px; }
+      .buybar__total strong{ font-size:17px; }
+      .buybar__btn{ padding-inline:12px; font-size:14px; }
+    }
+    @media (min-width:421px) and (max-width:859.98px){
+      .product-page{ padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 104px); }
     }
     @media (min-width:860px){
       .buybar{
         position:static; padding:16px 0 0; background:transparent;
-        border-top:1px solid var(--line);
-        -webkit-backdrop-filter:none; backdrop-filter:none;
+        border-top:1px solid var(--line); box-shadow:none;
       }
     }
 

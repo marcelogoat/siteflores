@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
 import { products } from '../src/domain/catalog';
 import { addItem, quote } from '../src/domain/commerce';
-import { demoCheckout, validateCheckout } from '../src/domain/checkout';
+import { demoCheckout, formatCep, formatCpf, formatPhone, validateCheckout } from '../src/domain/checkout';
 import { advanceOrder, confirmPayment, createOrder, decodeStore, emptyStore } from '../src/domain/storage';
 
 const available = products.find((item) => !item.sold_out)!;
@@ -39,6 +39,13 @@ test('checkout aceita dados demonstrativos e rejeita CPF repetido, UF inexistent
   expect(errors.cpf).toBeDefined();
   expect(errors.estado).toBeDefined();
   expect(errors.cep).toBeDefined();
+});
+test('formata dados brasileiros e exige nome completo e celular com DDD válido', () => {
+  expect(formatPhone('11999990000')).toBe('(11) 999990000');
+  expect(formatCpf('52998224725')).toBe('529.982.247-25');
+  expect(formatCep('01310100')).toBe('01310-100');
+  expect(validateCheckout({ ...demoCheckout, nome: 'Marcelo' }).nome).toBeDefined();
+  expect(validateCheckout({ ...demoCheckout, telefone: '(10) 999999999' }).telefone).toBeDefined();
 });
 test('data impossível e passada são rejeitadas mesmo com formato válido', () => {
   expect(validateCheckout({ ...demoCheckout, mode: 'agendada', data: '2027-02-30', periodo: '08h às 12h' }, '2027-01-01').data).toBeDefined();
