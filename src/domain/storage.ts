@@ -1,7 +1,9 @@
 import { productById } from './catalog';
-import { deliveryModes, itemKey, quote, validateQuantity, type CartItem, type DeliveryMode } from './commerce';
+import { isDeliveryMode, itemKey, quote, validateQuantity, type CartItem, type DeliveryMode } from './commerce';
 import { states, type CheckoutData } from './checkout';
 import type { PixPayment } from './pix';
+
+export { isDeliveryMode };
 
 export type Order = {
   id: string; createdAt: string; items: CartItem[]; coupon: string; mode: DeliveryMode;
@@ -20,8 +22,6 @@ const record = (value: unknown): value is Record<string, unknown> => typeof valu
 const text = (value: unknown, max = 200): value is string => typeof value === 'string' && value.length <= max;
 const email = (value: unknown): value is string => text(value) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const date = (value: unknown): value is string => text(value) && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
-export const isDeliveryMode = (value: unknown): value is DeliveryMode => typeof value === 'string' && Object.hasOwn(deliveryModes, value);
-
 function isPixPayment(value: unknown): value is PixPayment {
   if (!record(value) || !text(value.transactionId, 120) || !['PENDING', 'PAID', 'CANCELLED'].includes(value.status as string) || typeof value.amount !== 'number' || !Number.isSafeInteger(value.amount) || value.amount < 0 || !record(value.paymentData)) return false;
   if (value.invoiceUrl !== undefined && !text(value.invoiceUrl, 2_000)) return false;

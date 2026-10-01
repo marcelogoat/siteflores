@@ -8,6 +8,7 @@ export const deliveryModes = {
   agendada: { label: 'Entrega agendada', description: 'Escolha o melhor dia para surpreender', cents: 0 },
 };
 export type DeliveryMode = keyof typeof deliveryModes;
+export const isDeliveryMode = (value: unknown): value is DeliveryMode => typeof value === 'string' && Object.hasOwn(deliveryModes, value);
 export const itemKey = (item: CartItem) => JSON.stringify([item.productId, item.message]);
 
 export function validateQuantity(quantity: number): void {

@@ -1,7 +1,6 @@
 import { productById } from '../domain/catalog';
 import { validateCheckout, type CheckoutData } from '../domain/checkout';
-import { isDeliveryMode } from '../domain/storage';
-import { quote, type CartItem } from '../domain/commerce';
+import { isDeliveryMode, quote, type CartItem } from '../domain/commerce';
 
 const API_URL = 'https://api.blackcatoficial.com/api';
 export const gatewayKey = (provided?: string) => {
